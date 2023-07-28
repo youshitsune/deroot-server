@@ -15,10 +15,14 @@ def handle_req(client):
         size = client.recv(HEADER).decode()
         if size:
             req = client.recv(int(size)).decode()
-            with open(content_dir + req, "rb") as f:
-                ctx = f.read()
-            client.send(str(len(ctx)).encode() + b' ' * (HEADER - len(str(len(ctx)).encode())))
-            client.send(ctx)
+            if os.path.exists(content_dir + req):
+                with open(content_dir + req, "rb") as f:
+                    ctx = f.read()
+                client.send(str(len(ctx)).encode() + b' ' * (HEADER - len(str(len(ctx)).encode())))
+                client.send(ctx)
+            else:
+                client.send(str(len(b"404")).encode() + b' ' * (HEADER - len(str(len(b"404")).encode())))
+                client.send(b"404")
 
 def run():
     server.listen()
